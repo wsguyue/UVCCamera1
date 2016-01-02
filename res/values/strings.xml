@@ -4,5 +4,9 @@
     <string name="app_name">UVCCamera1</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="select">select</string>
+    <string name="refresh">refresh</string>
+    <string name="camera">camera</string>
+    <string name="no_device">no_device</string>
 
 </resources>
