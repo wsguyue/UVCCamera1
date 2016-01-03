@@ -1,12 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
- /*
+package com.maowei.widget;
+/*
  * UVCCamera
  * library and sample to access to UVC web camera on non-rooted Android device
  *
  * Copyright (c) 2014-2015 saki t_saki@serenegiant.com
  *
- * File name: AndroidManifest.xml
+ * File name: AspectRatioViewInterface.java
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,25 +22,9 @@
  * All files in the folder are under this Apache License, Version 2.0.
  * Files in the jni/libjpeg, jni/libusb, jin/libuvc, jni/rapidjson folder may have a different license, see the respective files.
 */
--->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.maowei.uvccamera1" >
-	<uses-sdk 
-	    android:minSdkVersion="14"
-	    />
-    <application
-        android:allowBackup="true"
-        android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
-        <activity
-            android:name="com.maowei.uvccamera1.MainActivity"
-            android:label="@string/app_name" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-    </application>
 
-</manifest>
+public interface AspectRatioViewInterface {
+    public void setAspectRatio(double aspectRatio);
+    public void onPause();
+    public void onResume();
+}

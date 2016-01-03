@@ -124,8 +124,8 @@ public class UVCCamera {
 	}
 
 	private UsbControlBlock mCtrlBlock;
-    protected long mControlSupports;			// カメラコントロールでサポートしている機能フラグ
-    protected long mProcSupports;				// プロセッシングユニットでサポートしている機能フラグ
+    protected long mControlSupports;			// 銈儭銉┿偝銉炽儓銉兗銉仹銈点儩銉笺儓銇椼仸銇勩倠姗熻兘銉曘儵銈�
+    protected long mProcSupports;				// 銉椼儹銈汇儍銈枫兂銈般儲銉嬨儍銉堛仹銈点儩銉笺儓銇椼仸銇勩倠姗熻兘銉曘儵銈�
     protected int mCurrentPreviewMode = 0;
 	protected int mCurrentPreviewWidth = DEFAULT_PREVIEW_WIDTH, mCurrentPreviewHeight = DEFAULT_PREVIEW_HEIGHT;
     protected String mSupportedSize;
@@ -361,7 +361,7 @@ public class UVCCamera {
      * this method require API >= 14
      * @param texture
      */
-    public void setPreviewTexture(final SurfaceTexture texture) {	// API >= 11
+    public void setPreviewTexture(final SurfaceTexture texture) {	
     	final Surface surface = new Surface(texture);	// XXX API >= 14
     	nativeSetPreviewDisplay(mNativePtr, surface);
     }
@@ -879,12 +879,12 @@ public class UVCCamera {
 	public synchronized void updateCameraParams() {
     	if (mNativePtr != 0) {
     		if ((mControlSupports == 0) || (mProcSupports == 0)) {
-        		// サポートしている機能フラグを取得
+        		// 銈点儩銉笺儓銇椼仸銇勩倠姗熻兘銉曘儵銈般倰鍙栧緱
     			if (mControlSupports == 0)
     				mControlSupports = nativeGetCtrlSupports(mNativePtr);
     			if (mProcSupports == 0)
     				mProcSupports = nativeGetProcSupports(mNativePtr);
-    	    	// 設定値を取得
+    	    	// 瑷畾鍊ゃ倰鍙栧緱
     	    	if ((mControlSupports != 0) && (mProcSupports != 0)) {
 	    	    	nativeUpdateBrightnessLimit(mNativePtr);
 	    	    	nativeUpdateContrastLimit(mNativePtr);
