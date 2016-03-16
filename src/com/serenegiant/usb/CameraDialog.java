@@ -34,6 +34,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.hardware.usb.UsbDevice;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -50,6 +51,8 @@ import com.maowei.uvccamera1.R;
 
 public class CameraDialog extends DialogFragment {
 	private static final String TAG = CameraDialog.class.getSimpleName();
+	private static final String TAG1 = "CameraDialog";
+	private static final boolean DEBUG = true;
 
 	public interface CameraDialogParent {
 		public USBMonitor getUSBMonitor();
@@ -61,6 +64,7 @@ public class CameraDialog extends DialogFragment {
 	 * @return
 	 */
 	public static CameraDialog showDialog(final Activity parent/* add parameters here if you need */) {
+		if(DEBUG) Log.v(TAG1, "showDialog");
 		CameraDialog dialog = newInstance(/* add parameters here if you need */);
 		try {
 			dialog.show(parent.getFragmentManager(), TAG);
@@ -71,6 +75,7 @@ public class CameraDialog extends DialogFragment {
 	}
 
 	public static CameraDialog newInstance(/* add parameters here if you need */) {
+		if(DEBUG) Log.v(TAG1,"newInstance");
 		final CameraDialog dialog = new CameraDialog();
 		final Bundle args = new Bundle();
 		// add parameters here if you need
@@ -83,12 +88,14 @@ public class CameraDialog extends DialogFragment {
 	private DeviceListAdapter mDeviceListAdapter;
 
 	public CameraDialog(/* no arguments */) {
+		if(DEBUG) Log.v(TAG1,"CameraDialog::constructor");
 		// Fragment need default constructor
 	}
 
 	@Override
 	public void onAttach(final Activity activity) {
 		super.onAttach(activity);
+		if(DEBUG) Log.v(TAG1,"onAttach");
        if (mUSBMonitor == null)
         try {
     		mUSBMonitor = ((CameraDialogParent)activity).getUSBMonitor();
@@ -96,13 +103,14 @@ public class CameraDialog extends DialogFragment {
     	} catch (final NullPointerException e) {
         }
 		if (mUSBMonitor == null) {
-        	throw new ClassCastException(activity.toString() + " must implement CameraDialogParent#getUSBController");
+        	throw new ClassCastException(activity.toString() + " must implement CameraDialogParent#getUSBMonitor");
 		}
 	}
 
 	@Override
     public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		if(DEBUG) Log.v(TAG1,"onCreate");
 		if (savedInstanceState == null)
 			savedInstanceState = getArguments();
 	}
@@ -117,6 +125,7 @@ public class CameraDialog extends DialogFragment {
 
 	@Override
     public Dialog onCreateDialog(final Bundle savedInstanceState) {
+		if(DEBUG) Log.v(TAG1,"onCreateDialog");
 		final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		builder.setView(initView());
     	builder.setTitle(R.string.select);
@@ -134,6 +143,7 @@ public class CameraDialog extends DialogFragment {
 	 * @return
 	 */
 	private final View initView() {
+		if(DEBUG) Log.v(TAG1,"initView");
 		final View rootView = getActivity().getLayoutInflater().inflate(R.layout.dialog_camera, null);
 		mSpinner = (Spinner)rootView.findViewById(R.id.spinner1);
 		final View empty = rootView.findViewById(android.R.id.empty);
@@ -145,6 +155,7 @@ public class CameraDialog extends DialogFragment {
 	@Override
 	public void onResume() {
 		super.onResume();
+		if(DEBUG) Log.v(TAG1,"onResume");
 		updateDevices();
 	    final Button button = (Button)getDialog().findViewById(android.R.id.button3);
 	    if (button != null) {
@@ -155,6 +166,7 @@ public class CameraDialog extends DialogFragment {
 	private final OnClickListener mOnClickListener = new OnClickListener() {
 		@Override
 		public void onClick(final View v) {
+			if(DEBUG) Log.v(TAG1,"mOnClickListener");
 			switch (v.getId()) {
 			case android.R.id.button3:
 				updateDevices();
@@ -166,6 +178,7 @@ public class CameraDialog extends DialogFragment {
 	private final DialogInterface.OnClickListener mOnDialogClickListener = new DialogInterface.OnClickListener() {
 		@Override
 		public void onClick(final DialogInterface dialog, final int which) {
+			if(DEBUG) Log.v(TAG1,"mOnDialogClickListener");
 			switch (which) {
 			case DialogInterface.BUTTON_POSITIVE:
 				final Object item = mSpinner.getSelectedItem();
@@ -178,6 +191,7 @@ public class CameraDialog extends DialogFragment {
 	};
 
 	public void updateDevices() {
+		if(DEBUG) Log.v(TAG1,"updateDevices");
 //		mUSBMonitor.dumpDevices();
 		final List<DeviceFilter> filter = DeviceFilter.getDeviceFilters(getActivity(), R.xml.device_filter);
 		mDeviceListAdapter = new DeviceListAdapter(getActivity(), mUSBMonitor.getDeviceList(filter.get(0)));
@@ -190,17 +204,20 @@ public class CameraDialog extends DialogFragment {
 		private final List<UsbDevice> mList;
 
 		public DeviceListAdapter(final Context context, final List<UsbDevice>list) {
+			if(DEBUG) Log.v(TAG1,"DeviceListAdapter");
 			mInflater = LayoutInflater.from(context);
 			mList = list != null ? list : new ArrayList<UsbDevice>();
 		}
 
 		@Override
 		public int getCount() {
+			if(DEBUG) Log.v(TAG1,"getCount");
 			return mList.size();
 		}
 
 		@Override
 		public UsbDevice getItem(final int position) {
+			if(DEBUG) Log.v(TAG1,"getItem");
 			if ((position >= 0) && (position < mList.size()))
 				return mList.get(position);
 			else
@@ -209,11 +226,13 @@ public class CameraDialog extends DialogFragment {
 
 		@Override
 		public long getItemId(final int position) {
+			if(DEBUG) Log.v(TAG1,"getItemId");
 			return position;
 		}
 
 		@Override
 		public View getView(final int position, View convertView, final ViewGroup parent) {
+			if(DEBUG) Log.v(TAG1,"getView");
 			if (convertView == null) {
 				convertView = mInflater.inflate(R.layout.listitem_device, parent, false);
 			}

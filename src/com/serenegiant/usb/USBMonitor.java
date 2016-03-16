@@ -46,7 +46,7 @@ import android.util.SparseArray;
 
 public final class USBMonitor {
 
-	private static final boolean DEBUG = false;	// TODO set false on production
+	private static final boolean DEBUG = true;	// TODO set false on production
 	private static final String TAG = "USBMonitor";
 
 	private static final String ACTION_USB_PERMISSION_BASE = "com.serenegiant.USB_PERMISSION.";
@@ -100,7 +100,7 @@ public final class USBMonitor {
 		mUsbManager = (UsbManager)context.getSystemService(Context.USB_SERVICE);
 		mOnDeviceConnectListener = listener;
 		if (DEBUG) Log.v(TAG, "USBMonitor:mUsbManager=" + mUsbManager);
-	}
+	}	
 
 	public void destroy() {
 		if (DEBUG) Log.i(TAG, "destroy:");
@@ -131,6 +131,7 @@ public final class USBMonitor {
 				mPermissionIntent = PendingIntent.getBroadcast(context, 0, new Intent(ACTION_USB_PERMISSION), 0);
 				final IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
 				filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+				//filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
 				context.registerReceiver(mUsbReceiver, filter);
 			}
 			mDeviceCounts = 0;
@@ -346,6 +347,7 @@ public final class USBMonitor {
 		@Override
 		public void run() {
 			final int n = getDeviceCount();
+			//根本没有进到这个if里面，deviceCount一直为0
 			if (n != mDeviceCounts) {
 				if (n > mDeviceCounts) {
 					mDeviceCounts = n;

@@ -113,8 +113,9 @@ public final class MainActivity extends Activity implements CameraDialog.CameraD
 	private final OnClickListener mOnClickListener = new OnClickListener() {
 		@Override
 		public void onClick(final View view) {
-			if (mUVCCamera == null)
+			if (mUVCCamera == null) {
 				CameraDialog.showDialog(MainActivity.this);
+				}
 			else {
 				mUVCCamera.destroy();
 				mUVCCamera = null;
