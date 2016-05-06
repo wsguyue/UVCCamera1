@@ -23,16 +23,24 @@ package com.maowei.uvccamera1;
  * Files in the jni/libjpeg, jni/libusb, jin/libuvc, jni/rapidjson folder may have a different license, see the respective files.
 */
 
+import java.nio.ByteBuffer;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import android.app.Activity;
 import android.graphics.SurfaceTexture;
 import android.hardware.usb.UsbDevice;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Surface;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.Window;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import com.maowei.widget.UVCCameraTextureView;
 import com.serenegiant.usb.CameraDialog;
 import com.serenegiant.usb.IButtonCallback;
 import com.serenegiant.usb.IStatusCallback;
@@ -40,12 +48,6 @@ import com.serenegiant.usb.USBMonitor;
 import com.serenegiant.usb.USBMonitor.OnDeviceConnectListener;
 import com.serenegiant.usb.USBMonitor.UsbControlBlock;
 import com.serenegiant.usb.UVCCamera;
-import com.maowei.widget.UVCCameraTextureView;
-
-import java.nio.ByteBuffer;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 public final class MainActivity extends Activity implements CameraDialog.CameraDialogParent {
 
@@ -64,10 +66,10 @@ public final class MainActivity extends Activity implements CameraDialog.CameraD
 	// for open&start / stop&close camera preview
 	private ImageButton mCameraButton;
 	private Surface mPreviewSurface;
-
 	@Override
 	protected void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_main);
 		mCameraButton = (ImageButton)findViewById(R.id.camera_button);
 		mCameraButton.setOnClickListener(mOnClickListener);
@@ -151,7 +153,7 @@ public final class MainActivity extends Activity implements CameraDialog.CameraD
 											"selector=" + selector + "; " +
 											"statusAttribute=" + statusAttribute + "; " +
 											"data=...)", Toast.LENGTH_SHORT).show();
-								}
+								} 
 							});
 
 						}
@@ -162,6 +164,7 @@ public final class MainActivity extends Activity implements CameraDialog.CameraD
 							runOnUiThread(new Runnable() {
 								@Override
 								public void run() {
+									Log.v("MainActivity","setButtonCallback");
 									Toast.makeText(MainActivity.this, "onButton(button=" + button + "; " +
 											"state=" + state + ")", Toast.LENGTH_SHORT).show();
 								}
@@ -209,7 +212,7 @@ public final class MainActivity extends Activity implements CameraDialog.CameraD
 		}
 
 		@Override
-		public void onDettach(final UsbDevice device) {
+		public void onDetach(final UsbDevice device) {
 			Toast.makeText(MainActivity.this, "USB_DEVICE_DETACHED", Toast.LENGTH_SHORT).show();
 		}
 

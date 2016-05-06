@@ -70,10 +70,10 @@ public final class USBMonitor {
 		 */
 		public void onAttach(UsbDevice device);
 		/**
-		 * called when device dettach(after onDisconnect)
+		 * called when device Detach(after onDisconnect)
 		 * @param device
 		 */
-		public void onDettach(UsbDevice device);
+		public void onDetach(UsbDevice device);
 		/**
 		 * called after device opend
 		 * @param device
@@ -143,8 +143,8 @@ public final class USBMonitor {
 	 * unregister BroadcastReceiver
 	 */
 	public synchronized void unregister() {
+		if (DEBUG) Log.i(TAG, "unregister:");
 		if (mPermissionIntent != null) {
-			if (DEBUG) Log.i(TAG, "unregister:");
 			final Context context = mWeakContext.get();
 			if (context != null) {
 				context.unregisterReceiver(mUsbReceiver);
@@ -335,7 +335,7 @@ public final class USBMonitor {
 						ctrlBlock.close();
 					}
 					mDeviceCounts = 0;
-					processDettach(device);
+					processDetach(device);
 				}
 			}
 		}
@@ -362,10 +362,11 @@ public final class USBMonitor {
 	private final void processConnect(final UsbDevice device) {
 		if (DEBUG) Log.v(TAG, "processConnect:");
 		mHandler.post(new Runnable() {
+			
 			@Override
 			public void run() {
 				UsbControlBlock ctrlBlock;
-				final boolean createNew;
+				boolean createNew;
 				ctrlBlock = mCtrlBlocks.get(device);
 				if (ctrlBlock == null) {
 					ctrlBlock = new UsbControlBlock(USBMonitor.this, device);
@@ -406,13 +407,13 @@ public final class USBMonitor {
 		}
 	}
 
-	private final void processDettach(final UsbDevice device) {
-		if (DEBUG) Log.v(TAG, "processDettach:");
-		if (mOnDeviceConnectListener != null) {
+	private final void processDetach(final UsbDevice device) {
+		if (DEBUG) Log.v(TAG, "processDetach:");
+		if (mOnDeviceConnectListener == null) {
 			mHandler.post(new Runnable() {
 				@Override
 				public void run() {
-					mOnDeviceConnectListener.onDettach(device);
+					mOnDeviceConnectListener.onDetach(device);
 				}
 			});
 		}
@@ -423,7 +424,6 @@ public final class USBMonitor {
 		private final WeakReference<UsbDevice> mWeakDevice;
 		protected UsbDeviceConnection mConnection;
 		private final SparseArray<UsbInterface> mInterfaces = new SparseArray<UsbInterface>();
-
 		/**
 		 * this class needs permission to access USB device before constructing
 		 * @param monitor
@@ -483,10 +483,11 @@ public final class USBMonitor {
 
 		/**
 		 * open specific interface
+		 * 这个地方可能写反了
 		 * @param interfaceIndex
 		 * @return
 		 */
-		public synchronized UsbInterface open(final int interfaceIndex) {
+		public synchronized UsbInterface getInterface(final int interfaceIndex) {
 			if (DEBUG) Log.i(TAG, "UsbControlBlock#open:" + interfaceIndex);
 			final UsbDevice device = mWeakDevice.get();
 			UsbInterface intf = null;

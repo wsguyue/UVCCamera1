@@ -132,7 +132,7 @@ public final class DeviceFilter {
 		try {
 			String v = parser.getAttributeValue(namespace, name);
 			if (!TextUtils.isEmpty(v) && v.startsWith("@")) {
-				final String r = v.substring(1);
+				final String r = v.substring(1); 
 				final int resId = context.getResources().getIdentifier(r, null, context.getPackageName());
 				if (resId > 0) {
 					result = context.getResources().getInteger(resId);

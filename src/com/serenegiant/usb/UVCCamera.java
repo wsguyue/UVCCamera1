@@ -40,8 +40,9 @@ import android.view.SurfaceHolder;
 import com.serenegiant.usb.USBMonitor.UsbControlBlock;
 
 public class UVCCamera {
-	private static final boolean DEBUG = false;	// TODO set false when releasing
+	private static final boolean DEBUG = true;	// TODO set false when releasing
 	private static final String TAG = UVCCamera.class.getSimpleName();
+	private static final String TAG1 = "UVCCamera";
 	private static final String DEFAULT_USBFS = "/dev/bus/usb";
 
 	public static final int DEFAULT_PREVIEW_WIDTH = 640;
@@ -116,6 +117,7 @@ public class UVCCamera {
 	private static boolean isLoaded;
 	static {
 		if (!isLoaded) {
+			if(DEBUG) Log.v(TAG,"library is loaded!");
 			System.loadLibrary("usb100");
 			System.loadLibrary("uvc");
 			System.loadLibrary("UVCCamera");
@@ -174,6 +176,7 @@ public class UVCCamera {
      * (UI thread or a thread that called Looper.prepare)
      */
     public UVCCamera() {
+    	if(DEBUG) Log.v(TAG,"UVCCamera:constructor");
     	mNativePtr = nativeCreate();
     	mSupportedSize = null;
 	}
@@ -184,6 +187,7 @@ public class UVCCamera {
      * @param ctrlBlock
      */
     public void open(final UsbControlBlock ctrlBlock) {
+    	if(DEBUG) Log.v(TAG,"open");
 		mCtrlBlock = ctrlBlock;
 		nativeConnect(mNativePtr,
 			mCtrlBlock.getVenderId(), mCtrlBlock.getProductId(),
@@ -202,6 +206,7 @@ public class UVCCamera {
 	 */
 	public void setStatusCallback(final IStatusCallback callback) {
 		if (mNativePtr != 0) {
+			if(DEBUG) Log.v(TAG,"setStatusCallback");
 			nativeSetStatusCallback(mNativePtr, callback);
 		}
 	}
@@ -212,6 +217,7 @@ public class UVCCamera {
 	 */
 	public void setButtonCallback(final IButtonCallback callback) {
 		if (mNativePtr != 0) {
+			if(DEBUG) Log.v(TAG,"setButtonCallBack");
 			nativeSetButtonCallback(mNativePtr, callback);
 		}
 	}
@@ -220,6 +226,7 @@ public class UVCCamera {
      * close and release UVC camera
      */
     public void close() {
+    	if(DEBUG) Log.v(TAG,"close");
     	stopPreview();
     	if (mNativePtr != 0) {
     		nativeRelease(mNativePtr);
@@ -230,22 +237,27 @@ public class UVCCamera {
     }
 
 	public UsbDevice getDevice() {
+		if(DEBUG) Log.v(TAG,"getDevice");
 		return mCtrlBlock != null ? mCtrlBlock.getDevice() : null;
 	}
 
 	public String getDeviceName(){
+		if(DEBUG) Log.v(TAG,"getDeviceName");
 		return mCtrlBlock != null ? mCtrlBlock.getDeviceName() : null;
 	}
 
 	public UsbControlBlock getUsbControlBlock() {
+		if(DEBUG) Log.v(TAG,"getUsbControlBlock");
 		return mCtrlBlock;
 	}
 
 	public synchronized String getSupportedSize() {
+		if(DEBUG) Log.v(TAG,"getSupportedSize");
     	return !TextUtils.isEmpty(mSupportedSize) ? mSupportedSize : (mSupportedSize = nativeGetSupportedSize(mNativePtr));
     }
 
 	public Size getPreviewSize() {
+		if(DEBUG) Log.v(TAG,"getPreviewSize");
 		Size result = null;
 		final List<Size> list = getSupportedSizeList();
 		for (final Size sz: list) {
@@ -264,6 +276,7 @@ public class UVCCamera {
 	   @param height
 	 */
 	public void setPreviewSize(final int width, final int height) {
+		if(DEBUG) Log.v(TAG,"setPreviewSize");
 		setPreviewSize(width, height, DEFAULT_PREVIEW_MIN_FPS, DEFAULT_PREVIEW_MAX_FPS, mCurrentPreviewMode, 0);
 	}
 
@@ -274,6 +287,7 @@ public class UVCCamera {
 	   @param mode 0:yuyv, other:MJPEG
 	 */
 	public void setPreviewSize(final int width, final int height, final int mode) {
+		if(DEBUG) Log.v(TAG,"setPreviewSize(3parameters)");
 		setPreviewSize(width, height, DEFAULT_PREVIEW_MIN_FPS, DEFAULT_PREVIEW_MAX_FPS, mode, 0);
 	}
 	
@@ -285,6 +299,7 @@ public class UVCCamera {
 	   @param bandwidth [0.0f,1.0f]
 	 */
 	public void setPreviewSize(final int width, final int height, final int mode, final float bandwidth) {
+		if(DEBUG) Log.v(TAG,"setPreviewSize(4parameters)");
 		setPreviewSize(width, height, DEFAULT_PREVIEW_MIN_FPS, DEFAULT_PREVIEW_MAX_FPS, mode, bandwidth);
 	}
 
@@ -298,12 +313,15 @@ public class UVCCamera {
 	 * @param bandwidth
 	 */
 	public void setPreviewSize(final int width, final int height, final int min_fps, final int max_fps, final int mode, final float bandwidth) {
-		if ((width == 0) || (height == 0))
+		if(DEBUG) Log.v(TAG,"setPreviewSize(5parameters)");
+		if ((width == 0) || (height == 0)) {
 			throw new IllegalArgumentException("invalid preview size");
+		}
 		if (mNativePtr != 0) {
 			final int result = nativeSetPreviewSize(mNativePtr, width, height, min_fps, max_fps, mode, bandwidth);
-			if (result != 0)
+			if (result != 0) {
 				throw new IllegalArgumentException("Failed to set preview size");
+			}
 			mCurrentPreviewMode = mode;
 			mCurrentPreviewWidth = width;
 			mCurrentPreviewHeight = height;
@@ -311,11 +329,13 @@ public class UVCCamera {
 	}
 
 	public List<Size> getSupportedSizeList() {
+		if(DEBUG) Log.v(TAG,"getSupportedSizeList");
 		final int type = (mCurrentPreviewMode > 0) ? 6 : 4;
 		return getSupportedSize(type, mSupportedSize);
 	}
 
 	public static List<Size> getSupportedSize(final int type, final String supportedSize) {
+		if(DEBUG) Log.v(TAG,"getSupportedSize(2parameters)");
 		final List<Size> result = new ArrayList<Size>();
 		if (!TextUtils.isEmpty(supportedSize))
 		try {
@@ -335,6 +355,7 @@ public class UVCCamera {
 	}
 
 	private static final void addSize(final JSONObject format, final int type, final List<Size> size_list) throws JSONException {
+		if(DEBUG) Log.v(TAG,"addSize");
 		final JSONArray size = format.getJSONArray("size");
 		final int size_nums = size.length();
 		for (int j = 0; j < size_nums; j++) {
@@ -353,6 +374,7 @@ public class UVCCamera {
      * @param holder
      */
     public void setPreviewDisplay(final SurfaceHolder holder) {
+    	if(DEBUG) Log.v(TAG,"setPreviewDisplay");
    		nativeSetPreviewDisplay(mNativePtr, holder.getSurface());
     }
 
@@ -362,6 +384,7 @@ public class UVCCamera {
      * @param texture
      */
     public void setPreviewTexture(final SurfaceTexture texture) {	
+    	if(DEBUG) Log.v(TAG,"setPreviewTexture");
     	final Surface surface = new Surface(texture);	// XXX API >= 14
     	nativeSetPreviewDisplay(mNativePtr, surface);
     }
@@ -371,6 +394,7 @@ public class UVCCamera {
      * @param surface
      */
     public void setPreviewDisplay(final Surface surface) {
+    	if(DEBUG) Log.v(TAG,"setPreviewDisplay use surface as parameter");
     	nativeSetPreviewDisplay(mNativePtr, surface);
     }
 
@@ -380,6 +404,7 @@ public class UVCCamera {
      * @param pixelFormat
      */
     public void setFrameCallback(final IFrameCallback callback, final int pixelFormat) {
+    	if(DEBUG) Log.v(TAG,"setFrameCallback");
     	if (mNativePtr != 0) {
         	nativeSetFrameCallback(mNativePtr, callback, pixelFormat);
     	}
@@ -389,6 +414,7 @@ public class UVCCamera {
      * start preview
      */
     public void startPreview() {
+    	if(DEBUG) Log.v(TAG,"startPreview");
     	if (mCtrlBlock != null) {
     		nativeStartPreview(mNativePtr);
     	}
@@ -398,6 +424,7 @@ public class UVCCamera {
      * stop preview
      */
     public void stopPreview() {
+    	if(DEBUG) Log.v(TAG,"stopPreview");
     	setFrameCallback(null, 0);
     	if (mCtrlBlock != null) {
     		nativeStopPreview(mNativePtr);
@@ -408,6 +435,7 @@ public class UVCCamera {
      * destroy UVCCamera object
      */
     public void destroy() {
+    	if(DEBUG) Log.v(TAG,"detroy");
     	close();
     	if (mNativePtr != 0) {
     		nativeDestroy(mNativePtr);
@@ -418,6 +446,7 @@ public class UVCCamera {
     // wrong result may return when you call this just after camera open.
     // it is better to wait several hundreads millseconds.
 	public boolean checkSupportFlag(final long flag) {
+		if(DEBUG) Log.v(TAG,"checkSupportFlag");
     	updateCameraParams();
     	if ((flag & 0x80000000) == 0x80000000)
     		return ((mProcSupports & flag) == (flag & 0x7ffffffF));
@@ -427,12 +456,14 @@ public class UVCCamera {
 
 //================================================================================
 	public synchronized void setAutoFocus(final boolean autoFocus) {
+		if(DEBUG) Log.v(TAG,"setAutoFocus");
     	if (mNativePtr != 0) {
     		nativeSetAutoFocus(mNativePtr, autoFocus);
     	}
     }
 
 	public synchronized boolean getAutoFocus() {
+		if(DEBUG) Log.v(TAG,"getAutoFocus");
     	boolean result = true;
     	if (mNativePtr != 0) {
     		result = nativeGetAutoFocus(mNativePtr) > 0;
@@ -444,6 +475,7 @@ public class UVCCamera {
      * @param focus [%]
      */
 	public synchronized void setFocus(final int focus) {
+		if(DEBUG) Log.v(TAG,"setFocus");
     	if (mNativePtr != 0) {
  		   final float range = Math.abs(mFocusMax - mFocusMin);
  		   if (range > 0)
@@ -456,6 +488,7 @@ public class UVCCamera {
      * @return focus[%]
      */
 	public synchronized int getFocus(final int focus_abs) {
+		if(DEBUG) Log.v(TAG,"getFocus");
 	   int result = 0;
 	   if (mNativePtr != 0) {
 		   nativeUpdateFocusLimit(mNativePtr);
@@ -471,10 +504,12 @@ public class UVCCamera {
      * @return focus[%]
      */
 	public synchronized int getFocus() {
+		if(DEBUG) Log.v(TAG,"getFocus no parameter");
     	return getFocus(nativeGetFocus(mNativePtr));
     }
 
 	public synchronized void resetFocus() {
+		if(DEBUG) Log.v(TAG,"resetFocus");
     	if (mNativePtr != 0) {
     		nativeSetFocus(mNativePtr, mFocusDef);
     	}
@@ -482,12 +517,14 @@ public class UVCCamera {
 
 //================================================================================
 	public synchronized void setAutoWhiteBlance(final boolean autoWhiteBlance) {
+		if(DEBUG) Log.v(TAG,"setAutoWhiteBlance");
     	if (mNativePtr != 0) {
     		nativeSetAutoWhiteBlance(mNativePtr, autoWhiteBlance);
     	}
     }
 
 	public synchronized boolean getAutoWhiteBlance() {
+		if(DEBUG) Log.v(TAG,"getAutoWhiteBlance no parameter");
     	boolean result = true;
     	if (mNativePtr != 0) {
     		result = nativeGetAutoWhiteBlance(mNativePtr) > 0;
@@ -500,6 +537,7 @@ public class UVCCamera {
      * @param whiteBlance [%]
      */
 	public synchronized void setWhiteBlance(final int whiteBlance) {
+		if(DEBUG) Log.v(TAG,"setWhiteBlance");
     	if (mNativePtr != 0) {
  		   final float range = Math.abs(mWhiteBlanceMax - mWhiteBlanceMin);
  		   if (range > 0)
@@ -512,6 +550,7 @@ public class UVCCamera {
      * @return whiteBlance[%]
      */
 	public synchronized int getWhiteBlance(final int whiteBlance_abs) {
+		if(DEBUG) Log.v(TAG,"getWhiteBlance 1 param");
 	   int result = 0;
 	   if (mNativePtr != 0) {
 		   nativeUpdateWhiteBlanceLimit(mNativePtr);
@@ -527,10 +566,12 @@ public class UVCCamera {
      * @return white blance[%]
      */
 	public synchronized int getWhiteBlance() {
+		if(DEBUG) Log.v(TAG,"getWhiteBlance");
     	return getFocus(nativeGetWhiteBlance(mNativePtr));
     }
 
 	public synchronized void resetWhiteBlance() {
+		if(DEBUG) Log.v(TAG,"resetWhiteBlance");
     	if (mNativePtr != 0) {
     		nativeSetWhiteBlance(mNativePtr, mWhiteBlanceDef);
     	}
@@ -540,6 +581,7 @@ public class UVCCamera {
      * @param brightness [%]
      */
 	public synchronized void setBrightness(final int brightness) {
+		if(DEBUG) Log.v(TAG,"setBrightness");
     	if (mNativePtr != 0) {
  		   final float range = Math.abs(mBrightnessMax - mBrightnessMin);
  		   if (range > 0)
@@ -552,6 +594,7 @@ public class UVCCamera {
      * @return brightness[%]
      */
 	public synchronized int getBrightness(final int brightness_abs) {
+		if(DEBUG) Log.v(TAG,"getBrightness");
 	   int result = 0;
 	   if (mNativePtr != 0) {
 		   nativeUpdateBrightnessLimit(mNativePtr);
@@ -567,10 +610,12 @@ public class UVCCamera {
      * @return brightness[%]
      */
 	public synchronized int getBrightness() {
+		if(DEBUG) Log.v(TAG,"getBrightness no param");
     	return getBrightness(nativeGetBrightness(mNativePtr));
     }
 
 	public synchronized void resetBrightness() {
+		if(DEBUG) Log.v(TAG,"resetBrightness");
     	if (mNativePtr != 0) {
     		nativeSetBrightness(mNativePtr, mBrightnessDef);
     	}
@@ -581,6 +626,7 @@ public class UVCCamera {
      * @param contrast [%]
      */
 	public synchronized void setContrast(final int contrast) {
+		if(DEBUG) Log.v(TAG,"setContrast");
     	if (mNativePtr != 0) {
     		nativeUpdateContrastLimit(mNativePtr);
 	    	final float range = Math.abs(mContrastMax - mContrastMin);
@@ -594,6 +640,7 @@ public class UVCCamera {
      * @return contrast[%]
      */
 	public synchronized int getContrast(final int contrast_abs) {
+		if(DEBUG) Log.v(TAG,"getContrast");
 	   int result = 0;
 	   if (mNativePtr != 0) {
 		   final float range = Math.abs(mContrastMax - mContrastMin);
@@ -608,10 +655,12 @@ public class UVCCamera {
      * @return contrast[%]
      */
 	public synchronized int getContrast() {
+		if(DEBUG) Log.v(TAG,"getContrast no param");
     	return getContrast(nativeGetContrast(mNativePtr));
     }
 
 	public synchronized void resetContrast() {
+		if(DEBUG) Log.v(TAG,"resetContrast");
     	if (mNativePtr != 0) {
     		nativeSetContrast(mNativePtr, mContrastDef);
     	}
@@ -622,6 +671,7 @@ public class UVCCamera {
      * @param sharpness [%]
      */
 	public synchronized void setSharpness(final int sharpness) {
+		if(DEBUG) Log.v(TAG,"setSharpness");
     	if (mNativePtr != 0) {
  		   final float range = Math.abs(mSharpnessMax - mSharpnessMin);
  		   if (range > 0)
@@ -634,6 +684,7 @@ public class UVCCamera {
      * @return sharpness[%]
      */
 	public synchronized int getSharpness(final int sharpness_abs) {
+		if(DEBUG) Log.v(TAG,"getSharpness");
 	   int result = 0;
 	   if (mNativePtr != 0) {
 		   nativeUpdateSharpnessLimit(mNativePtr);
@@ -649,10 +700,12 @@ public class UVCCamera {
      * @return sharpness[%]
      */
 	public synchronized int getSharpness() {
+		if(DEBUG) Log.v(TAG,"getSharpness no param");
     	return getSharpness(nativeGetSharpness(mNativePtr));
     }
 
 	public synchronized void resetSharpness() {
+		if(DEBUG) Log.v(TAG,"resetSharpness");
     	if (mNativePtr != 0) {
     		nativeSetSharpness(mNativePtr, mSharpnessDef);
     	}
@@ -662,6 +715,7 @@ public class UVCCamera {
      * @param gain [%]
      */
 	public synchronized void setGain(final int gain) {
+		if(DEBUG) Log.v(TAG,"setGain");
     	if (mNativePtr != 0) {
  		   final float range = Math.abs(mGainMax - mGainMin);
  		   if (range > 0)
@@ -674,6 +728,7 @@ public class UVCCamera {
      * @return gain[%]
      */
 	public synchronized int getGain(final int gain_abs) {
+		if(DEBUG) Log.v(TAG,"getGain");
 	   int result = 0;
 	   if (mNativePtr != 0) {
 		   nativeUpdateGainLimit(mNativePtr);
@@ -689,10 +744,12 @@ public class UVCCamera {
      * @return gain[%]
      */
 	public synchronized int getGain() {
+		if(DEBUG) Log.v(TAG,"getGain no param");
     	return getGain(nativeGetGain(mNativePtr));
     }
 
 	public synchronized void resetGain() {
+		if(DEBUG) Log.v(TAG,"resetGain");
     	if (mNativePtr != 0) {
     		nativeSetGain(mNativePtr, mGainDef);
     	}
@@ -703,6 +760,7 @@ public class UVCCamera {
      * @param gamma [%]
      */
 	public synchronized void setGamma(final int gamma) {
+		if(DEBUG) Log.v(TAG,"setGamma");
     	if (mNativePtr != 0) {
  		   final float range = Math.abs(mGammaMax - mGammaMin);
  		   if (range > 0)
@@ -715,6 +773,7 @@ public class UVCCamera {
      * @return gamma[%]
      */
 	public synchronized int getGamma(final int gamma_abs) {
+		if(DEBUG) Log.v(TAG,"getGamma");
 	   int result = 0;
 	   if (mNativePtr != 0) {
 		   nativeUpdateGammaLimit(mNativePtr);
@@ -730,10 +789,12 @@ public class UVCCamera {
      * @return gamma[%]
      */
 	public synchronized int getGamma() {
+		if(DEBUG) Log.v(TAG,"getGamma no param");
     	return getGamma(nativeGetGamma(mNativePtr));
     }
 
 	public synchronized void resetGamma() {
+		if(DEBUG) Log.v(TAG,"resetGamma no param");
     	if (mNativePtr != 0) {
     		nativeSetGamma(mNativePtr, mGammaDef);
     	}
@@ -744,6 +805,7 @@ public class UVCCamera {
      * @param saturation [%]
      */
 	public synchronized void setSaturation(final int saturation) {
+		if(DEBUG) Log.v(TAG,"setSaturation");
     	if (mNativePtr != 0) {
  		   final float range = Math.abs(mSaturationMax - mSaturationMin);
  		   if (range > 0)
@@ -756,6 +818,7 @@ public class UVCCamera {
      * @return saturation[%]
      */
 	public synchronized int getSaturation(final int saturation_abs) {
+		if(DEBUG) Log.v(TAG,"getSaturation");
 	   int result = 0;
 	   if (mNativePtr != 0) {
 		   nativeUpdateSaturationLimit(mNativePtr);
@@ -771,10 +834,12 @@ public class UVCCamera {
      * @return saturation[%]
      */
 	public synchronized int getSaturation() {
+		if(DEBUG) Log.v(TAG,"getSaturation no param");
     	return getSaturation(nativeGetSaturation(mNativePtr));
     }
 
 	public synchronized void resetSaturation() {
+		if(DEBUG) Log.v(TAG,"resetSaturation");
     	if (mNativePtr != 0) {
     		nativeSetSaturation(mNativePtr, mSaturationDef);
     	}
@@ -784,6 +849,7 @@ public class UVCCamera {
      * @param hue [%]
      */
 	public synchronized void setHue(final int hue) {
+		if(DEBUG) Log.v(TAG,"setHue");
     	if (mNativePtr != 0) {
  		   final float range = Math.abs(mHueMax - mHueMin);
  		   if (range > 0)
@@ -796,6 +862,7 @@ public class UVCCamera {
      * @return hue[%]
      */
 	public synchronized int getHue(final int hue_abs) {
+		if(DEBUG) Log.v(TAG,"getHue");
 	   int result = 0;
 	   if (mNativePtr != 0) {
 		   nativeUpdateHueLimit(mNativePtr);
@@ -811,10 +878,12 @@ public class UVCCamera {
      * @return hue[%]
      */
 	public synchronized int getHue() {
+		if(DEBUG) Log.v(TAG,"getHue no param");
     	return getHue(nativeGetHue(mNativePtr));
     }
 
 	public synchronized void resetHue() {
+		if(DEBUG) Log.v(TAG,"resetHue no param");
     	if (mNativePtr != 0) {
     		nativeSetHue(mNativePtr, mSaturationDef);
     	}
@@ -822,11 +891,13 @@ public class UVCCamera {
 
 //================================================================================
 	public void setPowerlineFrequency(final int frequency) {
+		if(DEBUG) Log.v(TAG,"setPowerlineFrequency");
     	if (mNativePtr != 0)
     		nativeSetPowerlineFrequency(mNativePtr, frequency);
     }
 
 	public int getPowerlineFrequency() {
+		if(DEBUG) Log.v(TAG,"getPowerlineFrequency");
     	return nativeGetPowerlineFrequency(mNativePtr);
     }
 
@@ -836,6 +907,7 @@ public class UVCCamera {
      * @param zoom [%]
      */
 	public synchronized void setZoom(final int zoom) {
+		if(DEBUG) Log.v(TAG,"setZoom");
     	if (mNativePtr != 0) {
  		   final float range = Math.abs(mZoomMax - mZoomMin);
  		   if (range > 0) {
@@ -851,6 +923,7 @@ public class UVCCamera {
      * @return zoom[%]
      */
 	public synchronized int getZoom(final int zoom_abs) {
+		if(DEBUG) Log.v(TAG,"getZoom");
 	   int result = 0;
 	   if (mNativePtr != 0) {
 		   nativeUpdateZoomLimit(mNativePtr);
@@ -866,10 +939,12 @@ public class UVCCamera {
      * @return zoom[%]
      */
 	public synchronized int getZoom() {
+		if(DEBUG) Log.v(TAG,"getZoom no param");
     	return getZoom(nativeGetZoom(mNativePtr));
     }
 
 	public synchronized void resetZoom() {
+		if(DEBUG) Log.v(TAG,"resetZoom no param");
     	if (mNativePtr != 0) {
     		nativeSetZoom(mNativePtr, mZoomDef);
     	}
@@ -877,6 +952,7 @@ public class UVCCamera {
 
 //================================================================================
 	public synchronized void updateCameraParams() {
+		if(DEBUG) Log.v(TAG,"updateCamraParams");
     	if (mNativePtr != 0) {
     		if ((mControlSupports == 0) || (mProcSupports == 0)) {
         		// 銈点儩銉笺儓銇椼仸銇勩倠姗熻兘銉曘儵銈般倰鍙栧緱
@@ -972,6 +1048,7 @@ public class UVCCamera {
 	};
 
     private static final void dumpControls(final long controlSupports) {
+    	if(DEBUG) Log.v(TAG,"dumpControls");
     	Log.i(TAG, String.format("controlSupports=%x", controlSupports));
     	for (int i = 0; i < SUPPORTS_CTRL.length; i++) {
     		Log.i(TAG, SUPPORTS_CTRL[i] + ((controlSupports & (0x1 << i)) != 0 ? "=enabled" : "=disabled"));
@@ -979,6 +1056,7 @@ public class UVCCamera {
     }
 
 	private static final void dumpProc(final long procSupports) {
+		if(DEBUG) Log.v(TAG,"dumpProc");
     	Log.i(TAG, String.format("procSupports=%x", procSupports));
     	for (int i = 0; i < SUPPORTS_PROC.length; i++) {
     		Log.i(TAG, SUPPORTS_PROC[i] + ((procSupports & (0x1 << i)) != 0 ? "=enabled" : "=disabled"));
@@ -986,6 +1064,7 @@ public class UVCCamera {
     }
 
 	private final String getUSBFSName(final UsbControlBlock ctrlBlock) {
+		if(DEBUG) Log.v(TAG,"getUSBFSName");
 		String result = null;
 		final String name = ctrlBlock.getDeviceName();
 		final String[] v = !TextUtils.isEmpty(name) ? name.split("/") : null;
@@ -1025,6 +1104,7 @@ public class UVCCamera {
      * @param surface
      */
     public void startCapture(final Surface surface) {
+    	if(DEBUG) Log.v(TAG,"startCapture");
     	if (mCtrlBlock != null && surface != null) {
     		nativeSetCaptureDisplay(mNativePtr, surface);
     	} else
@@ -1035,6 +1115,7 @@ public class UVCCamera {
      * stop movie capturing
      */
     public void stopCapture() {
+    	if(DEBUG) Log.v(TAG,"stopCapture");
     	if (mCtrlBlock != null) {
     		nativeSetCaptureDisplay(mNativePtr, null);
     	}

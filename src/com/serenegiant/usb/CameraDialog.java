@@ -214,7 +214,7 @@ public class CameraDialog extends DialogFragment {
 			if(DEBUG) Log.v(TAG1,"getCount");
 			return mList.size();
 		}
-
+ 
 		@Override
 		public UsbDevice getItem(final int position) {
 			if(DEBUG) Log.v(TAG1,"getItem");
